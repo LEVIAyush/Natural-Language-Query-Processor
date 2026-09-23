@@ -1,22 +1,22 @@
-CC      = gcc
-CFLAGS  = -Wall -O2
-LEX     = flex
-YACC    = bison
+# Builds the natural-language -> SQL compiler.
+# Produces ./nlqp (no .exe suffix - this is a POSIX binary meant to
+# run on whatever Linux container/host the server runs on).
 
-TARGET  = nlqp
+CC = gcc
+CFLAGS = -O2 -Wall
 
-.PHONY: all clean
+all: nlqp
 
-all: $(TARGET)
-
-$(TARGET): main.c nlqp.tab.c lex.yy.c
-	$(CC) $(CFLAGS) -o $(TARGET) main.c nlqp.tab.c lex.yy.c -lfl
+nlqp: nlqp.tab.c lex.yy.c main.c
+	$(CC) $(CFLAGS) -o nlqp main.c nlqp.tab.c lex.yy.c -lfl
 
 nlqp.tab.c nlqp.tab.h: nlqp.y
-	$(YACC) -d nlqp.y
+	bison -d nlqp.y
 
 lex.yy.c: token.l nlqp.tab.h
-	$(LEX) token.l
+	flex token.l
 
 clean:
-	rm -f $(TARGET) nlqp.tab.c nlqp.tab.h lex.yy.c nlqp.output
+	rm -f nlqp nlqp.tab.c nlqp.tab.h lex.yy.c nlqp.output
+
+.PHONY: all clean
